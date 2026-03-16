@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id          String   @id @default(cuid())
+  username    String   @unique
+  password    String
+  avatar      String   @default("🃏")
+  createdAt   DateTime @default(now())
+
+  createdGames  Game[]        @relation("GameCreator")
+  gamePlayers   GamePlayer[]
+  roundsRecorded Round[]
+
+  @@map("users")
+}
+
+model Game {
+  id          String     @id @default(cuid())
+  name        String
+  status      String     @default("active") // active | finished
+  baseScore   Int        @default(10)
+  createdBy   String
+  createdAt   DateTime   @default(now())
+  finishedAt  DateTime?
+
+  creator     User       @relation("GameCreator", fields: [createdBy], references: [id])
+  players     GamePlayer[]
+  rounds      Round[]
+
+  @@map("games")
+}
+
+model GamePlayer {
+  id        String @id @default(cuid())
+  gameId    String
+  userId    String
+  team      String // A | B
+  seatOrder Int
+
+  game      Game   @relation(fields: [gameId], references: [id])
+  user      User   @relation(fields: [userId], references: [id])
+
+  @@unique([gameId, userId])
+  @@map("game_players")
+}
+
+model Round {
+  id            String   @id @default(cuid())
+  gameId        String
+  roundNumber   Int
+  attackerTeam  String   // A | B
+  winnerTeam    String   // A | B
+  levelChange   Int      @default(1) // 升级数：1, 2, 3
+  isDoubled     Boolean  @default(false) // 底牌翻倍
+  note          String?
+  createdAt     DateTime @default(now())
+  recordedBy    String
+
+  game          Game     @relation(fields: [gameId], references: [id])
+  recorder      User     @relation(fields: [recordedBy], references: [id])
+  teamStates    TeamState[]
+
+  @@map("rounds")
+}
+
+model TeamState {
+  id           String  @id @default(cuid())
+  roundId      String
+  gameId       String
+  team         String  // A | B
+  currentLevel String  // 2,3,4,5,6,7,8,9,10,J,Q,K,A
+  isAttacker   Boolean
+
+  round        Round   @relation(fields: [roundId], references: [id])
+
+  @@map("team_states")
+}
