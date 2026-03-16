@@ -644,6 +644,7 @@ export default function RoomPage() {
   // We store team/seat choice before game starts
   const [myTeam, setMyTeam] = useState<'A' | 'B'>('A')
   const [mySeatIndex, setMySeatIndex] = useState(0)
+  const isMobile = useIsMobile()
 
   // Redirect if not logged in
   useEffect(() => {
@@ -793,7 +794,6 @@ export default function RoomPage() {
     )
   }
 
-  const isMobile = useIsMobile()
   const myPlayer = gameState.players.find(p => p.userId === user.id)
   const myHand = (myPlayer?.hand.filter(c => !('hidden' in c)) ?? []) as Card[]
   const sortedHand = gameState.trump
