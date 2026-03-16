@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback, useRef, useSyncExternalStore } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { useAuth } from '@/lib/store'
@@ -14,11 +14,14 @@ import { Crown, Loader2, Wifi, WifiOff } from 'lucide-react'
 // ─── Responsive hook ──────────────────────────────────────────────────────────
 
 function useIsMobile() {
-  return useSyncExternalStore(
-    (cb) => { window.addEventListener('resize', cb); return () => window.removeEventListener('resize', cb) },
-    () => window.innerWidth < 640,
-    () => false,
-  )
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+  return isMobile
 }
 
 // ─── Types matching server game-engine ────────────────────────────────────────
