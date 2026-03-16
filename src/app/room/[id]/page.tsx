@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback, useRef, useSyncExternalStore } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { useAuth } from '@/lib/store'
@@ -10,6 +10,16 @@ import { isTrump, getSuit, getCardRank, sortHand, getCardDisplay, countPoints, i
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Crown, Loader2, Wifi, WifiOff } from 'lucide-react'
+
+// ─── Responsive hook ──────────────────────────────────────────────────────────
+
+function useIsMobile() {
+  return useSyncExternalStore(
+    (cb) => { window.addEventListener('resize', cb); return () => window.removeEventListener('resize', cb) },
+    () => window.innerWidth < 640,
+    () => false,
+  )
+}
 
 // ─── Types matching server game-engine ────────────────────────────────────────
 
@@ -780,6 +790,7 @@ export default function RoomPage() {
     )
   }
 
+  const isMobile = useIsMobile()
   const myPlayer = gameState.players.find(p => p.userId === user.id)
   const myHand = (myPlayer?.hand.filter(c => !('hidden' in c)) ?? []) as Card[]
   const sortedHand = gameState.trump
@@ -1179,7 +1190,7 @@ export default function RoomPage() {
                   selected={isSelected}
                   onClick={() => canInteract && toggleCard(card)}
                   isTrumpCard={isTrumpCard}
-                  size="md"
+                  size={isMobile ? 'sm' : 'md'}
                   disabled={!canInteract}
                 />
               )
